@@ -7,7 +7,7 @@ const app = new Hono();
 app.post("/convert", async (c) => {
   try {
     const formData = await c.req.formData();
-    const file = formData.get("files") as File;
+    const file = formData.get("file") as File;
 
     if (!(file as File).name || (file as File).name === "undefined") {
       throw new HTTPException(422, {
@@ -26,8 +26,8 @@ app.post("/convert", async (c) => {
   } catch (error) {
     console.error("error: ", error);
 
-    return c.json({
-      error,
+    throw new HTTPException(500, {
+      message: `Error: ${error}`,
     });
   }
 });

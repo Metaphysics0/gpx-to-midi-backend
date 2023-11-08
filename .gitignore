@@ -1,3 +1,8 @@
 node_modules/
 .env
 temp/
+
+# fly deploy shiz
+Dockerfile
+fly.toml
+bun.lockb

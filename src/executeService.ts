@@ -22,7 +22,7 @@ export class ExecuteService {
 
   private async executeConvert(pathToConvert: string) {
     const proc = Bun.spawn([
-      process.cwd() + process.env.PATH_TO_EXECUTE_FUNCTION!,
+      process.cwd() + this.pathToExecFunction,
       pathToConvert,
     ]);
 
@@ -36,14 +36,15 @@ export class ExecuteService {
 
   private async writeFileToTempFolder(file: File) {
     const uploadPath =
-      process.cwd() +
-      `${process.env.PATH_TO_TEMP_FOLDER}/${Date.now()}__${file.name}`;
+      process.cwd() + `${this.tempFolder}/${Date.now()}__${file.name}`;
 
     try {
       await Bun.write(uploadPath, await file.arrayBuffer());
     } catch (error) {
       console.error("write to temp failed", error);
-      throw new Error("uploading initial file failed");
+      throw new Error(
+        `uploading initial file failed, unable to write: ${uploadPath}, ${error}`
+      );
     }
 
     return uploadPath;
@@ -56,9 +57,7 @@ export class ExecuteService {
       throw new Error("unable to find orignally uploaded file");
     }
 
-    const dirCont = await readdir(
-      process.cwd() + process.env.PATH_TO_TEMP_FOLDER!
-    );
+    const dirCont = await readdir(process.cwd() + this.tempFolder!);
     const convertedFileName = dirCont.find((elm) =>
       elm.includes(uploadedFileTimestamp)
     );
@@ -67,9 +66,7 @@ export class ExecuteService {
       throw new Error("unable to find newly converted file");
     }
 
-    return (
-      process.cwd() + process.env.PATH_TO_TEMP_FOLDER + "/" + convertedFileName
-    );
+    return process.cwd() + this.tempFolder + "/" + convertedFileName;
   }
 
   private getFileNameParts(filePath: string) {
@@ -85,5 +82,13 @@ export class ExecuteService {
 
   private async deleteFile(pathToFile: string) {
     await unlink(pathToFile);
+  }
+
+  private get tempFolder(): string {
+    return process.env.PATH_TO_TEMP_FOLDER || "/temp";
+  }
+
+  private get pathToExecFunction(): string {
+    return process.env.PATH_TO_EXECUTE_FUNCTION || "/scripts/script-osx";
   }
 }

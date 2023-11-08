@@ -1,11 +1,14 @@
 {
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "start": "NODE_ENV=production bun run src/index.ts",
+    "start_from_docker": ""
   },
   "dependencies": {
     "hono": "^3.9.2"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "latest",
     "bun-types": "^1.0.7"
   }
 }
