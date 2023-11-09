@@ -1,6 +1,8 @@
 node_modules/
 .env
-temp/
+
+!temp/.gitkeep
+temp/.*
 
 # fly deploy shiz
 Dockerfile

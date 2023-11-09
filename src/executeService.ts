@@ -1,4 +1,4 @@
-import { readdir, unlink, writeFile } from "node:fs/promises";
+import { readdir, unlink } from "node:fs/promises";
 
 export class ExecuteService {
   async writeFileAndConvert(
@@ -21,10 +21,7 @@ export class ExecuteService {
   }
 
   private async executeConvert(pathToConvert: string) {
-    const proc = Bun.spawn([
-      process.cwd() + this.pathToExecFunction,
-      pathToConvert,
-    ]);
+    const proc = Bun.spawn([this.pathToExecFunction, pathToConvert]);
 
     try {
       await new Response(proc.stdout).text();
@@ -35,7 +32,7 @@ export class ExecuteService {
   }
 
   private async writeFileToTempFolder(file: File) {
-    const uploadPath = `${this.tempFolder}/${Date.now()}__${file.name}`;
+    const uploadPath = `${this.pathToTempFolder}/${Date.now()}__${file.name}`;
 
     try {
       await Bun.write(uploadPath, await file.arrayBuffer());
@@ -56,7 +53,7 @@ export class ExecuteService {
       throw new Error("unable to find orignally uploaded file");
     }
 
-    const dirCont = await readdir(this.tempFolder);
+    const dirCont = await readdir(this.pathToTempFolder);
     const convertedFileName = dirCont.find((elm) =>
       elm.includes(uploadedFileTimestamp)
     );
@@ -65,7 +62,7 @@ export class ExecuteService {
       throw new Error("unable to find newly converted file");
     }
 
-    return process.cwd() + this.tempFolder + "/" + convertedFileName;
+    return this.pathToTempFolder + "/" + convertedFileName;
   }
 
   private getFileNameParts(filePath: string) {
@@ -83,11 +80,16 @@ export class ExecuteService {
     await unlink(pathToFile);
   }
 
-  private get tempFolder(): string {
-    return process.env.PATH_TO_TEMP_FOLDER || "/temp";
+  private get pathToTempFolder(): string {
+    return this.appendCwdToPath(process.env.PATH_TO_TEMP_FOLDER || "/temp");
   }
 
   private get pathToExecFunction(): string {
-    return process.env.PATH_TO_EXECUTE_FUNCTION || "/scripts/script-osx";
+    return this.appendCwdToPath(
+      process.env.PATH_TO_EXECUTE_FUNCTION || "/scripts/script-osx"
+    );
   }
+
+  private appendCwdToPath = (path: string): string =>
+    process.cwd() + (path.startsWith("/") ? path : path.substring(1));
 }

@@ -8,7 +8,6 @@ app.post("/convert", async (c) => {
   try {
     const formData = await c.req.formData();
     const file = formData.get("file") as File;
-
     if (!(file as File).name || (file as File).name === "undefined") {
       throw new HTTPException(422, {
         message: "You must provide a file to upload",
@@ -16,6 +15,7 @@ app.post("/convert", async (c) => {
     }
 
     const service = new ExecuteService();
+
     const { file: convertedFileBuffer, name } =
       await service.writeFileAndConvert(file);
 
@@ -32,8 +32,6 @@ app.post("/convert", async (c) => {
   }
 });
 
-app.get("/", (c) => {
-  return c.text("hello");
-});
+app.get("/", (c) => c.text("hello"));
 
 export default app;
