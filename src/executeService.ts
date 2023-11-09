@@ -1,4 +1,4 @@
-import { readdir, unlink } from "node:fs/promises";
+import { readdir, unlink, writeFile } from "node:fs/promises";
 
 export class ExecuteService {
   async writeFileAndConvert(
@@ -35,8 +35,7 @@ export class ExecuteService {
   }
 
   private async writeFileToTempFolder(file: File) {
-    const uploadPath =
-      process.cwd() + `${this.tempFolder}/${Date.now()}__${file.name}`;
+    const uploadPath = `${this.tempFolder}/${Date.now()}__${file.name}`;
 
     try {
       await Bun.write(uploadPath, await file.arrayBuffer());
@@ -57,7 +56,7 @@ export class ExecuteService {
       throw new Error("unable to find orignally uploaded file");
     }
 
-    const dirCont = await readdir(process.cwd() + this.tempFolder!);
+    const dirCont = await readdir(this.tempFolder);
     const convertedFileName = dirCont.find((elm) =>
       elm.includes(uploadedFileTimestamp)
     );
