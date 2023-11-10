@@ -4,7 +4,6 @@ node_modules/
 !temp/.gitkeep
 temp/.*
 
-# fly deploy shiz
-Dockerfile
 fly.toml
-bun.lockb
+
+scripts/script-osx

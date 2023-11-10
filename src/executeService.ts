@@ -59,7 +59,11 @@ export class ExecuteService {
     );
 
     if (!convertedFileName) {
-      throw new Error("unable to find newly converted file");
+      throw new Error(
+        `unable to find newly converted file, in directory ${
+          this.pathToTempFolder
+        }: ${JSON.stringify(dirCont)}`
+      );
     }
 
     return this.pathToTempFolder + "/" + convertedFileName;
@@ -86,7 +90,7 @@ export class ExecuteService {
 
   private get pathToExecFunction(): string {
     return this.appendCwdToPath(
-      process.env.PATH_TO_EXECUTE_FUNCTION || "/scripts/script-osx"
+      process.env.PATH_TO_EXECUTE_FUNCTION || "/scripts/script-linux"
     );
   }
 
