@@ -1,6 +1,6 @@
 import { readdir, unlink } from "node:fs/promises";
 
-export class ExecuteService {
+class ExecuteService {
   async writeFileAndConvert(
     file: File
   ): Promise<{ file: ArrayBuffer; name: string }> {
@@ -97,3 +97,5 @@ export class ExecuteService {
   private appendCwdToPath = (path: string): string =>
     process.cwd() + (path.startsWith("/") ? path : path.substring(1));
 }
+
+export const executeService = new ExecuteService();
