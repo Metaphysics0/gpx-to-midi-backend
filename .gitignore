@@ -5,5 +5,5 @@ node_modules/
 temp/.*
 
 fly.toml
-
+Dockerfile
 scripts/script-osx
