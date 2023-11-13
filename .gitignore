@@ -1,9 +1,11 @@
 node_modules/
 .env
 
-!temp/.gitkeep
 temp/.*
+!temp/.gitkeep
 
 fly.toml
 Dockerfile
 scripts/script-osx
+
+bin

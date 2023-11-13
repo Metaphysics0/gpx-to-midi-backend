@@ -5,6 +5,7 @@
     "start_from_docker": ""
   },
   "dependencies": {
+    "env-var": "^7.4.1",
     "hono": "^3.9.2"
   },
   "devDependencies": {

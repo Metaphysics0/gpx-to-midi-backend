@@ -1,4 +1,5 @@
 import { readdir, unlink } from "node:fs/promises";
+import { config } from "../env";
 
 class ExecuteService {
   async writeFileAndConvert(
@@ -85,13 +86,11 @@ class ExecuteService {
   }
 
   private get pathToTempFolder(): string {
-    return this.appendCwdToPath(process.env.PATH_TO_TEMP_FOLDER || "/temp");
+    return this.appendCwdToPath(config.pathToTempFolder);
   }
 
   private get pathToExecFunction(): string {
-    return this.appendCwdToPath(
-      process.env.PATH_TO_EXECUTE_FUNCTION || "/scripts/script-linux"
-    );
+    return this.appendCwdToPath(config.pathToExecuteFunction);
   }
 
   private appendCwdToPath = (path: string): string =>
