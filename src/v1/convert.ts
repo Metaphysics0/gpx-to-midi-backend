@@ -9,8 +9,11 @@ export const convertApi = new Hono();
 convertApi.post("/", async (c) => {
   try {
     const formData = await c.req.formData();
-    const file = paramService.getFileFromFormData(formData, "file");
-    paramService.ensureFileIsValidContentType(file, SUPPORTED_FILE_TYPES);
+    const file = paramService.getFileFromFormData({
+      formData,
+      fileName: "file",
+      permittedFileTypes: SUPPORTED_FILE_TYPES,
+    });
 
     const { file: convertedFileBuffer, name } =
       await executeService.writeFileAndConvert(file);
@@ -27,5 +30,3 @@ convertApi.post("/", async (c) => {
     });
   }
 });
-
-convertApi.get("/", async (c) => c.text("hello"));

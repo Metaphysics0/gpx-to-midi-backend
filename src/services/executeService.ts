@@ -36,6 +36,7 @@ class ExecuteService {
     const uploadPath = `${this.pathToTempFolder}/${Date.now()}__${file.name}`;
 
     try {
+      console.info("writing file to temp folder", uploadPath);
       await Bun.write(uploadPath, await file.arrayBuffer());
     } catch (error) {
       console.error("write to temp failed", error);
