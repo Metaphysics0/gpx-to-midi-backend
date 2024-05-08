@@ -18,6 +18,6 @@ app.onError((err) => {
 });
 
 export default {
-  port: process.env.APP_PORT,
+  port: process.env.APP_PORT || 3002,
   fetch: app.fetch,
 };
