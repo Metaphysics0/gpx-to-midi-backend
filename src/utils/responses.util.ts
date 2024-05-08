@@ -1,7 +1,7 @@
 import { HTTPException } from 'hono/http-exception';
 
 export function throwUnknownServerError(message: string) {
-  throw new HTTPException(500, { message });
+  throw unknownServerError(message);
 }
 
 export function throwInvalidParamError(message: string) {
@@ -10,4 +10,8 @@ export function throwInvalidParamError(message: string) {
 
 export function throwNotSupportedMediaTypeParam(message: string) {
   throw new HTTPException(415, { message });
+}
+
+export function unknownServerError(message: string = 'Unknown server error') {
+  return new HTTPException(500, { message });
 }

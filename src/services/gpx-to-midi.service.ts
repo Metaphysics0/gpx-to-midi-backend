@@ -1,32 +1,31 @@
 import { readdir, unlink } from 'node:fs/promises';
 
-export class ExecuteScriptService {
-  async writeFileAndConvert(
+export class GpxToMidiService {
+  async convert(
     file: File
-  ): Promise<{ contents: ArrayBuffer; name: string } | undefined> {
+  ): Promise<{ contents: number[]; name: string } | undefined> {
     try {
       console.log(`Beginning upload for file: ${file.name}`);
 
       const uploadPath = await this.writeFileToTempFolder(file);
 
-      await this.executeConvert(uploadPath);
-      await this.deleteFile(uploadPath);
+      await this.executeConvertScript(uploadPath);
 
       const convertedFilePath = await this.getConvertedFilePath(uploadPath);
       const convertedFile = await Bun.file(convertedFilePath).arrayBuffer();
 
-      await this.deleteFile(convertedFilePath);
-
       return {
         name: this.getFileNameParts(uploadPath).name,
-        contents: convertedFile,
+        contents: Array.from(new Uint8Array(convertedFile)),
       };
-    } catch (error) {
-      await this.cleanTempDirectory();
+    } catch (error: any) {
+      throw new Error(error);
+    } finally {
+      await this.removeAllFilesFromTempDirectory();
     }
   }
 
-  private async executeConvert(pathToConvert: string) {
+  private async executeConvertScript(pathToConvert: string) {
     const proc = Bun.spawn([this.pathToExecFunction, pathToConvert]);
 
     try {
@@ -38,17 +37,16 @@ export class ExecuteScriptService {
   }
 
   private async writeFileToTempFolder(file: File) {
-    const uploadPath = `${this.pathToTempFolder}/${Date.now()}__${file.name}`;
     try {
+      const uploadPath = `${this.pathToTempFolder}/${Date.now()}__${file.name}`;
       await Bun.write(uploadPath, await file.arrayBuffer());
+      return uploadPath;
     } catch (error) {
       console.error('write to temp failed', error);
       throw new Error(
-        `uploading initial file failed, unable to write: ${uploadPath}, ${error}`
+        `uploading initial file failed, unable to write to temp folder: ${error}`
       );
     }
-
-    return uploadPath;
   }
 
   private async getConvertedFilePath(uploadPath: string): Promise<string> {
@@ -93,7 +91,7 @@ export class ExecuteScriptService {
     await unlink(pathToFile);
   }
 
-  private async cleanTempDirectory() {
+  private async removeAllFilesFromTempDirectory() {
     try {
       const tempFiles = await this.getTempFolderDirectoryContents();
       await Promise.all(

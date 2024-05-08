@@ -39,11 +39,7 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 # copy production dependencies and source code into final image
 FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/src/index.ts .
-COPY --from=prerelease /usr/src/app/src/executeService.ts .
-COPY --from=prerelease /usr/src/app/scripts ./scripts
-COPY --from=prerelease /usr/src/app/temp ./temp
-COPY --from=prerelease /usr/src/app/package.json .
+COPY --from=prerelease /usr/src/app/ .
 
 USER root
 RUN chmod 755 /usr/src/app/scripts/script-linux
@@ -52,5 +48,5 @@ RUN chmod 755 /usr/src/app/temp
 RUN chown -R bun:bun .
 
 
-EXPOSE 3000/tcp
-ENTRYPOINT [ "bun", "run", "index.ts"]
+EXPOSE 3002/tcp
+ENTRYPOINT [ "bun", "run", "src/index.ts"]
