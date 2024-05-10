@@ -26,9 +26,8 @@ export class GpxToMidiService {
   }
 
   private async executeConvertScript(pathToConvert: string) {
-    const proc = Bun.spawn([this.pathToExecFunction, pathToConvert]);
-
     try {
+      const proc = Bun.spawn([this.pathToExecFunction, pathToConvert]);
       await new Response(proc.stdout).text();
     } catch (error) {
       console.error('error', error);
