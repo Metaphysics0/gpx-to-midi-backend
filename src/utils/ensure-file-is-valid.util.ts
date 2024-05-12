@@ -1,4 +1,7 @@
-import { SUPPORTED_FILE_TYPES } from '../constants';
+import {
+  SUPPORTED_GUITAR_PRO_FILE_TYPES,
+  SUPPORTED_MIDI_FILE_TYPES,
+} from '../constants';
 import {
   throwInvalidParamError,
   throwNotSupportedMediaTypeParam,
@@ -14,7 +17,12 @@ export function ensureFileIsValid(file: File): void {
     throwInvalidParamError('Please include a valid file extension in the file');
   }
 
-  if (!SUPPORTED_FILE_TYPES.includes(fileExtension!)) {
+  if (
+    ![
+      ...SUPPORTED_GUITAR_PRO_FILE_TYPES,
+      ...SUPPORTED_MIDI_FILE_TYPES,
+    ].includes(fileExtension!)
+  ) {
     throwNotSupportedMediaTypeParam('Not supported file type');
   }
 }

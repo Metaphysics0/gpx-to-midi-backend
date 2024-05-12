@@ -1,27 +1,31 @@
 import { Hono } from 'hono';
-import { GpxToMidiService } from '../services/gpx-to-midi.service';
 import { throwUnknownServerError } from '../utils/responses.util';
-import { ensureFileIsValid } from '../utils/ensure-file-is-valid.util';
+import { SUPPORTED_CONVERT_OPTIONS } from '../constants';
+import { getConvertType } from '../utils/get-convert-type.util';
+import { getRequiredFileFromRequest } from '../utils/get-required-file-from-request.util';
+import { getConversionService } from '../utils/get-conversion-service.util';
 
 const convertController = new Hono();
 
-convertController.post('/', async (c) => {
-  try {
-    const formData = await c.req.formData();
-    const file = formData.get('file') as File;
-    ensureFileIsValid(file);
+convertController.post(
+  `/:from{${SUPPORTED_CONVERT_OPTIONS.join(
+    '|'
+  )}}/:to{${SUPPORTED_CONVERT_OPTIONS.join('|')}}`,
+  async (c) => {
+    try {
+      const { from, to } = c.req.param();
+      const convertType = getConvertType({ from, to });
+      const file = await getRequiredFileFromRequest(c.req);
 
-    const midiFile = await new GpxToMidiService().convert(file);
-    if (!midiFile) throwUnknownServerError('Unable to convert file');
+      const service = getConversionService(convertType);
+      const convertedFileResponse = await new service(file).convert();
 
-    return c.json({
-      name: midiFile!.name,
-      file: midiFile!.contents,
-    });
-  } catch (error) {
-    console.error(`POST /convert api failed: ${JSON.stringify(error)}`);
-    throwUnknownServerError('Unknown server error');
+      return c.json(convertedFileResponse);
+    } catch (error) {
+      console.error(`POST /convert api failed: ${JSON.stringify(error)}`);
+      throwUnknownServerError('Unknown server error');
+    }
   }
-});
+);
 
 export { convertController };

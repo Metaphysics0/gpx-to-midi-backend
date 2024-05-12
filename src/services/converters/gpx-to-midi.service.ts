@@ -1,24 +1,32 @@
+import { Converter } from './base';
 import { readdir, unlink } from 'node:fs/promises';
+import { appendCwdToPath } from '../../utils/path.util';
+import { ConvertedFileResponse } from '../../types/responses.types';
 
-export class GpxToMidiService {
-  async convert(
-    file: File
-  ): Promise<{ contents: number[]; name: string } | undefined> {
+export class GpxToMidiService extends Converter {
+  async convert(): Promise<ConvertedFileResponse> {
     try {
-      console.log(`Beginning upload for file: ${file.name}`);
+      console.log(
+        `GpxToMidi - Beginning convert for file: ${this.inputFile.name}`
+      );
 
-      const uploadPath = await this.writeFileToTempFolder(file);
-
+      const uploadPath = await this.writeFileToTempFolder();
       await this.executeConvertScript(uploadPath);
 
       const convertedFilePath = await this.getConvertedFilePath(uploadPath);
       const convertedFile = await Bun.file(convertedFilePath).arrayBuffer();
 
+      console.log(
+        `GpxToMidi - ✅ Succesfully converted file: ${this.inputFile.name}`
+      );
       return {
         name: this.getFileNameParts(uploadPath).name,
-        contents: Array.from(new Uint8Array(convertedFile)),
+        file: Array.from(new Uint8Array(convertedFile)),
       };
     } catch (error: any) {
+      console.error(
+        `GpxToMidi - ❌ Failed converting file: ${this.inputFile.name}`
+      );
       throw new Error(error);
     } finally {
       await this.removeAllFilesFromTempDirectory();
@@ -35,10 +43,12 @@ export class GpxToMidiService {
     }
   }
 
-  private async writeFileToTempFolder(file: File) {
+  private async writeFileToTempFolder() {
     try {
-      const uploadPath = `${this.pathToTempFolder}/${Date.now()}__${file.name}`;
-      await Bun.write(uploadPath, await file.arrayBuffer());
+      const uploadPath = `${this.pathToTempFolder}/${Date.now()}__${
+        this.inputFile.name
+      }`;
+      await Bun.write(uploadPath, await this.inputFile.arrayBuffer());
       return uploadPath;
     } catch (error) {
       console.error('write to temp failed', error);
@@ -108,15 +118,12 @@ export class GpxToMidiService {
   }
 
   private get pathToTempFolder(): string {
-    return this.appendCwdToPath(process.env.PATH_TO_TEMP_FOLDER || '/temp');
+    return appendCwdToPath(process.env.PATH_TO_TEMP_FOLDER || '/temp');
   }
 
   private get pathToExecFunction(): string {
-    return this.appendCwdToPath(
+    return appendCwdToPath(
       process.env.PATH_TO_EXECUTE_FUNCTION || '/scripts/script-osx'
     );
   }
-
-  private appendCwdToPath = (path: string): string =>
-    process.cwd() + (path.startsWith('/') ? path : path.substring(1));
 }
