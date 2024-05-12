@@ -1,4 +1,7 @@
+import { HonoRequest } from 'hono';
 import { readdir, unlink } from 'node:fs/promises';
+import { ensureFileIsValid } from '../utils/ensure-file-is-valid.util';
+import { throwUnknownServerError } from '../utils/responses.util';
 
 export class GpxToMidiService {
   async convert(
@@ -119,4 +122,18 @@ export class GpxToMidiService {
 
   private appendCwdToPath = (path: string): string =>
     process.cwd() + (path.startsWith('/') ? path : path.substring(1));
+}
+
+export async function convertGuitarProFileToMidi(req: HonoRequest) {
+  const formData = await req.formData();
+  const file = formData.get('file') as File;
+  ensureFileIsValid(file);
+
+  const midiFile = await new GpxToMidiService().convert(file);
+  if (!midiFile) throwUnknownServerError('Unable to convert file');
+
+  return {
+    name: midiFile!.name,
+    file: midiFile!.contents,
+  };
 }
