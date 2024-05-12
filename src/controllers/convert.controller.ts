@@ -1,11 +1,8 @@
 import { Hono } from 'hono';
-import {
-  GpxToMidiService,
-  convertGuitarProFileToMidi,
-} from '../services/gpx-to-midi.service';
+import { convertGuitarProFileToMidi } from '../services/gpx-to-midi.service';
 import { throwUnknownServerError } from '../utils/responses.util';
-import { ensureFileIsValid } from '../utils/ensure-file-is-valid.util';
 import { CONVERT_OPTIONS, ConvertOptionsType } from '../constants';
+import { convertMidiToGuitarPro } from '../services/midi-to-gpx.service';
 
 const convertController = new Hono();
 
@@ -14,12 +11,16 @@ convertController.post(
   async (c) => {
     try {
       const { from, to } = c.req.param();
-
       if (
         from === ConvertOptionsType.GUITAR_PRO &&
         to === ConvertOptionsType.MIDI
       ) {
         const convertedFileResponse = await convertGuitarProFileToMidi(c.req);
+        return c.json(convertedFileResponse);
+      }
+
+      if (from === ConvertOptionsType.MIDI && ConvertOptionsType.GUITAR_PRO) {
+        const convertedFileResponse = await convertMidiToGuitarPro(c.req);
         return c.json(convertedFileResponse);
       }
     } catch (error) {
