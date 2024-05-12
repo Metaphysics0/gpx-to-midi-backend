@@ -5,7 +5,10 @@
     "start_from_docker": ""
   },
   "dependencies": {
-    "hono": "^3.9.2"
+    "@spotify/basic-pitch": "^1.0.1",
+    "@tonejs/midi": "^2.0.28",
+    "hono": "^3.9.2",
+    "web-audio-api": "^0.2.2"
   },
   "devDependencies": {
     "bun-types": "^1.0.7"
