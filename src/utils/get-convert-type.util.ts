@@ -22,5 +22,9 @@ export function getConvertType({
     return ConversionType.MIDI_TO_GPX;
   }
 
-  throw new Error('Converting the same type!');
+  if (from === ConvertOptionsType.AUDIO && to === ConvertOptionsType.MIDI) {
+    return ConversionType.AUDIO_TO_MIDI;
+  }
+
+  throw new Error(`${from} to ${to} conversion type not supported!`);
 }
