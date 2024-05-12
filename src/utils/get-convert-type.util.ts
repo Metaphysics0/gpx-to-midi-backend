@@ -26,5 +26,12 @@ export function getConvertType({
     return ConversionType.AUDIO_TO_MIDI;
   }
 
+  if (
+    from === ConvertOptionsType.AUDIO &&
+    to === ConvertOptionsType.GUITAR_PRO
+  ) {
+    return ConversionType.AUDIO_TO_GPX;
+  }
+
   throw new Error(`${from} to ${to} conversion type not supported!`);
 }

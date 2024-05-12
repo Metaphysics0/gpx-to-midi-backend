@@ -1,4 +1,5 @@
 import {
+  SUPPORTED_AUDIO_TYPES,
   SUPPORTED_GUITAR_PRO_FILE_TYPES,
   SUPPORTED_MIDI_FILE_TYPES,
 } from '../constants';
@@ -21,6 +22,7 @@ export function ensureFileIsValid(file: File): void {
     ![
       ...SUPPORTED_GUITAR_PRO_FILE_TYPES,
       ...SUPPORTED_MIDI_FILE_TYPES,
+      ...SUPPORTED_AUDIO_TYPES,
     ].includes(fileExtension!)
   ) {
     throwNotSupportedMediaTypeParam('Not supported file type');

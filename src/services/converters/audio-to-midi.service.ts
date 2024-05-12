@@ -15,6 +15,9 @@ export class AudioToMidiService extends Converter {
     const data = await this.getEvaluatedData(fileBuffer);
     const notes = this.getNotes(data);
     const midiFile = this.getConvertedFile(notes);
+    console.log(
+      `AudioToMidi - ✅ Succesfully converted ${this.inputFile.name}`
+    );
 
     return {
       name: this.inputFile.name,
