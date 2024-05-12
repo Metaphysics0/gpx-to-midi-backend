@@ -1,26 +1,27 @@
 import { Hono } from 'hono';
-import { convertGuitarProFileToMidi } from '../services/gpx-to-midi.service';
+import { convertGpxToMidi } from '../services/gpx-to-midi.service';
 import { throwUnknownServerError } from '../utils/responses.util';
-import { CONVERT_OPTIONS, ConvertOptionsType } from '../constants';
-import { convertMidiToGuitarPro } from '../services/midi-to-gpx.service';
+import { SUPPORTED_CONVERT_OPTIONS } from '../constants';
+import { convertMidiToGpx } from '../services/midi-to-gpx.service';
+import { getConvertType } from '../utils/get-convert-type';
 
 const convertController = new Hono();
 
 convertController.post(
-  `/:from{${CONVERT_OPTIONS.join('|')}}/:to{${CONVERT_OPTIONS.join('|')}}`,
+  `/:from{${SUPPORTED_CONVERT_OPTIONS.join(
+    '|'
+  )}}/:to{${SUPPORTED_CONVERT_OPTIONS.join('|')}}`,
   async (c) => {
     try {
       const { from, to } = c.req.param();
-      if (
-        from === ConvertOptionsType.GUITAR_PRO &&
-        to === ConvertOptionsType.MIDI
-      ) {
-        const convertedFileResponse = await convertGuitarProFileToMidi(c.req);
+      const convertType = getConvertType({ from, to });
+      if (convertType.gpxToMidi) {
+        const convertedFileResponse = await convertGpxToMidi(c.req);
         return c.json(convertedFileResponse);
       }
 
-      if (from === ConvertOptionsType.MIDI && ConvertOptionsType.GUITAR_PRO) {
-        const convertedFileResponse = await convertMidiToGuitarPro(c.req);
+      if (convertType.midiToGpx) {
+        const convertedFileResponse = await convertMidiToGpx(c.req);
         return c.json(convertedFileResponse);
       }
     } catch (error) {
