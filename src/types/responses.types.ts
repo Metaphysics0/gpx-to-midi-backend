@@ -1,4 +1,4 @@
 export interface ConvertedFileResponse {
   name: string;
-  contents: number[];
+  file: number[];
 }

@@ -1,17 +1,33 @@
-import { HonoRequest } from 'hono';
-import { Fetcher } from '../utils/fetcher.util';
-import { ensureFileIsValid } from '../utils/ensure-file-is-valid.util';
-import { throwUnknownServerError } from '../utils/responses.util';
-import { ConvertedFileResponse } from '../types/responses.types';
-export class MidiToGpxService {
-  constructor(private readonly inputFile: File) {}
+import { Fetcher } from '../../utils/fetcher.util';
+import { ConvertedFileResponse } from '../../types/responses.types';
+import { Converter } from './base';
 
-  async convert(): Promise<ConvertedFileResponse | undefined> {
-    await this.prepareConvert();
-    return this.executeConvert();
+export class MidiToGpxService extends Converter {
+  async convert(): Promise<ConvertedFileResponse> {
+    try {
+      console.log(
+        `MidiToGpx - Beginning convert for file: ${this.inputFile.name}`
+      );
+      await this.prepareConvert();
+      const convertedFile = await this.executeConvert();
+
+      console.log(
+        `MidiToGpx - ✅ Succesfully converted file: ${this.inputFile.name}`
+      );
+
+      return {
+        name: this.inputFile.name,
+        file: Array.from(new Uint8Array(convertedFile)),
+      };
+    } catch (error: any) {
+      console.error(
+        `MidiToGpx - ❌ Failed converting file: ${this.inputFile.name}`
+      );
+      throw new Error(error);
+    }
   }
 
-  private async executeConvert(): Promise<ConvertedFileResponse | undefined> {
+  private async executeConvert() {
     try {
       const response = await fetch(
         process.env.MIDI_TO_GPX_EXECUTE_CONVERT_URL! +
@@ -26,12 +42,7 @@ export class MidiToGpxService {
         }
       );
 
-      const responseData = await response.arrayBuffer();
-
-      return {
-        name: this.inputFile.name,
-        contents: Array.from(new Uint8Array(responseData)),
-      };
+      return response.arrayBuffer();
     } catch (error) {
       console.error('MidiToGpx - executeConvert failed', error);
       throw new Error('Error converting file');
@@ -60,18 +71,4 @@ export class MidiToGpxService {
       throw new Error('Unable to prepare convert file');
     }
   }
-}
-
-export async function convertMidiToGpx(req: HonoRequest) {
-  const formData = await req.formData();
-  const file = formData.get('file') as File;
-  ensureFileIsValid(file);
-
-  const midiFile = await new MidiToGpxService(file).convert();
-  if (!midiFile) throwUnknownServerError('Unable to convert file');
-
-  return {
-    name: midiFile!.name,
-    file: midiFile!.contents,
-  };
 }

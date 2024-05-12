@@ -1,14 +1,10 @@
-import { HonoRequest } from 'hono';
+import { Converter } from './base';
 import { readdir, unlink } from 'node:fs/promises';
-import { ensureFileIsValid } from '../utils/ensure-file-is-valid.util';
-import { throwUnknownServerError } from '../utils/responses.util';
-import { appendCwdToPath } from '../utils/path.util';
-import { ConvertedFileResponse } from '../types/responses.types';
+import { appendCwdToPath } from '../../utils/path.util';
+import { ConvertedFileResponse } from '../../types/responses.types';
 
-export class GpxToMidiService {
-  constructor(private readonly inputFile: File) {}
-
-  async convert(): Promise<ConvertedFileResponse | undefined> {
+export class GpxToMidiService extends Converter {
+  async convert(): Promise<ConvertedFileResponse> {
     try {
       console.log(
         `GpxToMidi - Beginning convert for file: ${this.inputFile.name}`
@@ -25,7 +21,7 @@ export class GpxToMidiService {
       );
       return {
         name: this.getFileNameParts(uploadPath).name,
-        contents: Array.from(new Uint8Array(convertedFile)),
+        file: Array.from(new Uint8Array(convertedFile)),
       };
     } catch (error: any) {
       console.error(
@@ -130,18 +126,4 @@ export class GpxToMidiService {
       process.env.PATH_TO_EXECUTE_FUNCTION || '/scripts/script-osx'
     );
   }
-}
-
-export async function convertGpxToMidi(req: HonoRequest) {
-  const formData = await req.formData();
-  const file = formData.get('file') as File;
-  ensureFileIsValid(file);
-
-  const midiFile = await new GpxToMidiService(file).convert();
-  if (!midiFile) throwUnknownServerError('Unable to convert file');
-
-  return {
-    name: midiFile!.name,
-    file: midiFile!.contents,
-  };
 }

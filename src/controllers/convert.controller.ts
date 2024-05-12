@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
-import { convertGpxToMidi } from '../services/gpx-to-midi.service';
 import { throwUnknownServerError } from '../utils/responses.util';
 import { SUPPORTED_CONVERT_OPTIONS } from '../constants';
-import { convertMidiToGpx } from '../services/midi-to-gpx.service';
-import { getConvertType } from '../utils/get-convert-type';
+import { getConvertType } from '../utils/get-convert-type.util';
+import { getRequiredFileFromRequest } from '../utils/get-required-file-from-request.util';
+import { getConversionService } from '../utils/get-conversion-service.util';
 
 const convertController = new Hono();
 
@@ -15,15 +15,12 @@ convertController.post(
     try {
       const { from, to } = c.req.param();
       const convertType = getConvertType({ from, to });
-      if (convertType.gpxToMidi) {
-        const convertedFileResponse = await convertGpxToMidi(c.req);
-        return c.json(convertedFileResponse);
-      }
+      const file = await getRequiredFileFromRequest(c.req);
 
-      if (convertType.midiToGpx) {
-        const convertedFileResponse = await convertMidiToGpx(c.req);
-        return c.json(convertedFileResponse);
-      }
+      const service = getConversionService(convertType);
+      const convertedFileResponse = await new service(file).convert();
+
+      return c.json(convertedFileResponse);
     } catch (error) {
       console.error(`POST /convert api failed: ${JSON.stringify(error)}`);
       throwUnknownServerError('Unknown server error');
